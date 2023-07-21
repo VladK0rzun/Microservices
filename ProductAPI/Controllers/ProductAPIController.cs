@@ -10,6 +10,7 @@ namespace Services.ProductApi.Controllers
 {
     [Route("api/product")]
     [ApiController]
+    [Authorize]
     public class ProductAPIController : ControllerBase
     {
         private readonly AppDbContext _db;
@@ -58,7 +59,7 @@ namespace Services.ProductApi.Controllers
 
 
         [HttpPost]
-        //[Authorize(Roles ="ADMIN")]
+        [Authorize(Roles ="ADMIN")]
         public ResponseDTO Post([FromBody] ProductDTO ProductDTO)
         {
             try
@@ -77,7 +78,7 @@ namespace Services.ProductApi.Controllers
         }
 
         [HttpPut]
-        //[Authorize(Roles = "ADMIN")]
+        [Authorize(Roles = "ADMIN")]
         public ResponseDTO Put([FromBody] ProductDTO ProductDTO)
         {
             try
@@ -97,6 +98,7 @@ namespace Services.ProductApi.Controllers
 
         [HttpDelete]
         [Route("{id:int}")]
+        [Authorize(Roles = "ADMIN")]
         public ResponseDTO Delete(int id)
         {
             try
