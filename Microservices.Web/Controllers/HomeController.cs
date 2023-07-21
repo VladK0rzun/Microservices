@@ -1,6 +1,9 @@
 using Microservices.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Services.Web.Models;
+using Services.Web.Service.IService;
 using Services.Web.Utility;
 using System.Diagnostics;
 
@@ -8,18 +11,52 @@ namespace Microservices.Web.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IProductService _productService;
+        public HomeController(IProductService productService)
+        {
+            _productService = productService;
+        }
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+
+
+        public async Task<IActionResult> Index()
         {
-            _logger = logger;
+            List<ProductDTO>? list = new();
+
+            ResponseDTO? response = await _productService.GetAllProductsAsync();
+
+            if (response != null && response.IsSuccess)
+            {
+                list = JsonConvert.DeserializeObject<List<ProductDTO>>(Convert.ToString(response.Result));
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+            }
+
+            return View(list);
         }
 
-        public IActionResult Index()
+        [Authorize]
+        public async Task<IActionResult> ProductDetails(int productId)
         {
-            return View();
+            ProductDTO? model = new();
+
+            ResponseDTO? response = await _productService.GetProductByIdAsync(productId);
+
+            if (response != null && response.IsSuccess)
+            {
+                model = JsonConvert.DeserializeObject<ProductDTO>(Convert.ToString(response.Result));
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+            }
+
+            return View(model);
         }
-        
+
         [Authorize(Roles = SD.RoleAdmin)]
         public IActionResult Privacy()
         {
