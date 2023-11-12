@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Services.Web.Models;
 using Services.Web.Service.IService;
+using Services.Web.Utility;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace Services.Web.Controllers
@@ -46,12 +47,10 @@ namespace Services.Web.Controllers
 
             if (response != null & response.IsSuccess)
             {
-                //TempData["success"] = "Order created successfully";
-                //return RedirectToAction(nameof(CheckoutConfirmation), new { id = orderHeaderDTO.OrderHeaderId });
                 var domain = Request.Scheme + "://" + Request.Host.Value + "/";
                 StripeRequestDTO stripeRequestDTO = new()
                 {
-                    ApproveUrl = domain + "cart/Confirmation?Id=" + orderHeaderDTO.OrderHeaderId,
+                    ApproveUrl = domain + "cart/Confirmation?orderId=" + orderHeaderDTO.OrderHeaderId,
                     CancelUrl = domain + "cart/Checkout",
                     OrderHeader = orderHeaderDTO
                 };
@@ -65,7 +64,16 @@ namespace Services.Web.Controllers
 
         public async Task<IActionResult> Confirmation(int orderId)
         {
-
+            ResponseDTO? response = await _orderService.ValidateStripeSession(orderId);
+            if (response != null & response.IsSuccess)
+            {
+                OrderHeaderDTO orderHeaderDTO = JsonConvert.DeserializeObject<OrderHeaderDTO>(Convert.ToString(response.Result));
+                if(orderHeaderDTO.Status == SD.Status_Approved)
+                {
+                    return View(orderId);
+                }
+                
+            }
             return View(orderId);
         }
 
