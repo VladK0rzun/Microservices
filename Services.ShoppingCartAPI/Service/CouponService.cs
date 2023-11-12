@@ -17,9 +17,9 @@ namespace Services.ShoppingCartAPI.Service
         {
             var client = _httpClientFactory.CreateClient("Coupon");
             var response = await client.GetAsync($"/api/coupon/GetByCode/{couponCode}");
-            var apiContent = await response.Content.ReadAsStringAsync();
-            var resp = JsonConvert.DeserializeObject<ResponseDTO>(apiContent);
-            if (resp.IsSuccess)
+            var apiContet = await response.Content.ReadAsStringAsync();
+            var resp = JsonConvert.DeserializeObject<ResponseDTO>(apiContet);
+            if (resp != null && resp.IsSuccess)
             {
                 return JsonConvert.DeserializeObject<CouponDTO>(Convert.ToString(resp.Result));
             }

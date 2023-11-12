@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Services.EmailAPI.Models;
 using System.Net.Http.Headers;
 
 namespace Services.EmailAPI.Data
@@ -9,7 +10,7 @@ namespace Services.EmailAPI.Data
         public AppDbContext(DbContextOptions options) : base(options)
         {
         }
-        public DbSet<Product> Products { get; set; }
+        public DbSet<EmailLogger> EmailLoggers { get; set; }
         
     }
 }
