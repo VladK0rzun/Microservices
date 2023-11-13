@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Services.RewardAPI.Data;
+using Services.RewardAPI.Extension;
+using Services.RewardAPI.Messaging;
+using Services.RewardAPI.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,6 +11,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+var optionBuilder = new DbContextOptionsBuilder<AppDbContext>();
+optionBuilder.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+builder.Services.AddSingleton(new RewardService(optionBuilder.Options));
+
+builder.Services.AddSingleton<IAzureServiceBusConsumer, AzureServiceBusConsumer>();
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -25,21 +36,11 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 ApplyMigration();
+app.UseAzureServiceBusConsumer();
 app.MapControllers();
 
 app.Run();
-//void ApplyMigration()
-//{
-//    using (var scope = app.Services.CreateScope())
-//    {
-//        var _db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-//        if (_db.Database.GetPendingMigrations().Count() > 0)
-//        {
-//            _db.Database.Migrate();
-//        }
-//    }
-//}
 void ApplyMigration()
 {
     using (var scope = app.Services.CreateScope())
