@@ -56,11 +56,11 @@ namespace Services.Web.Controllers
         {
             var roleList = new List<SelectListItem>()
             {
-                new SelectListItem{Text=SD.RoleAdmin, Value = SD.RoleAdmin},
-                new SelectListItem{Text=SD.RoleCustomer,Value = SD.RoleCustomer},
+                new SelectListItem{Text=SD.RoleAdmin,Value=SD.RoleAdmin},
+                new SelectListItem{Text=SD.RoleCustomer,Value=SD.RoleCustomer},
             };
-            ViewBag.RoleList = roleList;
 
+            ViewBag.RoleList = roleList;
             return View();
         }
 
@@ -76,16 +76,16 @@ namespace Services.Web.Controllers
         public async Task<IActionResult> Register(RegistrationRequestDTO obj)
         {
             ResponseDTO result = await _authService.RegisterAsync(obj);
-            ResponseDTO assignRole;
+            ResponseDTO assingRole;
 
-            if(result != null && result.IsSuccess) 
+            if (result != null )
             {
                 if (string.IsNullOrEmpty(obj.Role))
                 {
                     obj.Role = SD.RoleCustomer;
                 }
-                assignRole = await _authService.AssignRoleAsync(obj);
-                if(assignRole != null && assignRole.IsSuccess)
+                assingRole = await _authService.AssignRoleAsync(obj);
+                if (assingRole != null && assingRole.IsSuccess)
                 {
                     TempData["success"] = "Registration Successful";
                     return RedirectToAction(nameof(Login));
@@ -98,12 +98,11 @@ namespace Services.Web.Controllers
 
             var roleList = new List<SelectListItem>()
             {
-                new SelectListItem{Text=SD.RoleAdmin, Value = SD.RoleAdmin},
-                new SelectListItem{Text=SD.RoleCustomer,Value = SD.RoleCustomer},
+                new SelectListItem{Text=SD.RoleAdmin,Value=SD.RoleAdmin},
+                new SelectListItem{Text=SD.RoleCustomer,Value=SD.RoleCustomer},
             };
 
             ViewBag.RoleList = roleList;
-
             return View(obj);
         }
 
@@ -113,18 +112,18 @@ namespace Services.Web.Controllers
             var jwt = handler.ReadJwtToken(model.Token);
 
             var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
-            identity.AddClaim(new Claim(JwtRegisteredClaimNames.Email, 
+            identity.AddClaim(new Claim(JwtRegisteredClaimNames.Email,
                 jwt.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Email).Value));
-            identity.AddClaim(new Claim(JwtRegisteredClaimNames.Sub, 
+            identity.AddClaim(new Claim(JwtRegisteredClaimNames.Sub,
                 jwt.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Sub).Value));
-            identity.AddClaim(new Claim(JwtRegisteredClaimNames.Name, 
+            identity.AddClaim(new Claim(JwtRegisteredClaimNames.Name,
                 jwt.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Name).Value));
 
-            identity.AddClaim(new Claim(ClaimTypes.Name, 
-                jwt.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Email).Value));
 
+            identity.AddClaim(new Claim(ClaimTypes.Name,
+                jwt.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Email).Value));
             identity.AddClaim(new Claim(ClaimTypes.Role,
-               jwt.Claims.FirstOrDefault(u => u.Type == "role").Value));
+                jwt.Claims.FirstOrDefault(u => u.Type == "role").Value));
 
             var principal = new ClaimsPrincipal(identity);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);

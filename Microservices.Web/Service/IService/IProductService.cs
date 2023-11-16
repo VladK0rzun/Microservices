@@ -4,7 +4,6 @@ namespace Services.Web.Service.IService
 {
     public interface IProductService
     {
-        Task<ResponseDTO?> GetProduct(string CouponCode);
         Task<ResponseDTO?> GetAllProductsAsync();
         Task<ResponseDTO?> GetProductByIdAsync(int id);
         Task<ResponseDTO?> CreateProductsAsync(ProductDTO productDTO);

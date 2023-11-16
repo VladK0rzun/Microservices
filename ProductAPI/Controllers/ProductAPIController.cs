@@ -59,14 +59,34 @@ namespace Services.ProductApi.Controllers
 
         [HttpPost]
         [Authorize(Roles ="ADMIN")]
-        public ResponseDTO Post([FromBody] ProductDTO ProductDTO)
+        public ResponseDTO Post( ProductDTO ProductDTO)
         {
             try
             {
-                Product obj = _mapper.Map<Product>(ProductDTO);
-                _db.Products.Add(obj);
+                Product product = _mapper.Map<Product>(ProductDTO);
+                _db.Products.Add(product);
                 _db.SaveChanges();
-                _response.Result = _mapper.Map<ProductDTO>(obj);
+
+                if (ProductDTO.Image != null)
+                {
+                    string fileName = product.ProductId + Path.GetExtension(ProductDTO.Image.FileName);
+                    string filePath = @"wwwroot\ProductImages\" + fileName;
+                    var filePathDirectory = Path.Combine(Directory.GetCurrentDirectory(), filePath);
+                    using (var fileStream = new FileStream(filePathDirectory, FileMode.Create))
+                    {
+                        ProductDTO.Image.CopyTo(fileStream);
+                    }
+                    var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}{HttpContext.Request.PathBase.Value}";
+                    product.ImageUrl =baseUrl +"/ProductImages/"+ fileName;
+                    product.ImageLocalPath = filePath;
+                }
+                else
+                {
+                    product.ImageUrl = "https://placeholder.co/600*400";
+                }
+                _db.Products.Update(product);
+                _db.SaveChanges();
+                _response.Result = _mapper.Map<ProductDTO>(product);
             }
             catch (Exception ex)
             {
@@ -78,14 +98,38 @@ namespace Services.ProductApi.Controllers
 
         [HttpPut]
         [Authorize(Roles = "ADMIN")]
-        public ResponseDTO Put([FromBody] ProductDTO ProductDTO)
+        public ResponseDTO Put(ProductDTO ProductDTO)
         {
             try
             {
-                Product obj = _mapper.Map<Product>(ProductDTO);
-                _db.Products.Update(obj);
+                Product product = _mapper.Map<Product>(ProductDTO);
+
+                if (ProductDTO.Image != null)
+                {
+                    if (!string.IsNullOrEmpty(product.ImageLocalPath))
+                    {
+                        var oldFilePathDirectory = Path.Combine(Directory.GetCurrentDirectory(), product.ImageLocalPath);
+                        FileInfo file = new FileInfo(oldFilePathDirectory);
+                        if (file.Exists)
+                        {
+                            file.Delete();
+                        }
+                    }
+                    string fileName = product.ProductId + Path.GetExtension(ProductDTO.Image.FileName);
+                    string filePath = @"wwwroot\ProductImages\" + fileName;
+                    var filePathDirectory = Path.Combine(Directory.GetCurrentDirectory(), filePath);
+                    using (var fileStream = new FileStream(filePathDirectory, FileMode.Create))
+                    {
+                        ProductDTO.Image.CopyTo(fileStream);
+                    }
+                    var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}{HttpContext.Request.PathBase.Value}";
+                    product.ImageUrl = baseUrl + "/ProductImages/" + fileName;
+                    product.ImageLocalPath = filePath;
+                }
+
+                _db.Products.Update(product);
                 _db.SaveChanges();
-                _response.Result = _mapper.Map<ProductDTO>(obj);
+                _response.Result = _mapper.Map<ProductDTO>(product);
             }
             catch (Exception ex)
             {
@@ -103,6 +147,16 @@ namespace Services.ProductApi.Controllers
             try
             {
                 Product obj = _db.Products.First(u=>u.ProductId == id);
+                if(!string.IsNullOrEmpty(obj.ImageLocalPath))
+                {
+                    var oldFilePathDirectory = Path.Combine(Directory.GetCurrentDirectory(), obj.ImageLocalPath);
+                    FileInfo file = new FileInfo(oldFilePathDirectory);
+                    if (file.Exists)
+                    {
+                          file.Delete();
+                    }
+                }
+
                 _db.Products.Remove(obj);
                 _db.SaveChanges();
             }

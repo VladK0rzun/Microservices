@@ -1,3 +1,4 @@
+using IdentityModel;
 using Microservices.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,9 +13,11 @@ namespace Microservices.Web.Controllers
     public class HomeController : Controller
     {
         private readonly IProductService _productService;
-        public HomeController(IProductService productService)
+        private readonly ICartService _cartService;
+        public HomeController(IProductService productService, ICartService cartService)
         {
             _productService = productService;
+            _cartService = cartService;
         }
         private readonly ILogger<HomeController> _logger;
 
@@ -55,6 +58,44 @@ namespace Microservices.Web.Controllers
             }
 
             return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ActionName("ProductDetails")]
+        public async Task<IActionResult> ProductDetails(ProductDTO productDTO)
+        {
+           
+            CartDTO cartDTO = new CartDTO()
+            {
+                CartHeader = new CartHeaderDTO()
+                {
+                    UserId = User.Claims.Where(u => u.Type == JwtClaimTypes.Subject)?.FirstOrDefault()?.Value
+                }
+            };
+
+            CartDetailsDTO cartDetails = new CartDetailsDTO()
+            {
+                Count = productDTO.Count,
+                ProductId = productDTO.ProductId,
+            };
+
+            List<CartDetailsDTO> cartDetailsDTOs = new() {cartDetails };
+            cartDTO.CartDetails = cartDetailsDTOs;
+
+            ResponseDTO? response = await _cartService.UpsertCartAsync(cartDTO);
+
+            if (response != null && response.IsSuccess)
+            {
+                TempData["success"] = "Item has been added";
+                return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+            }
+
+            return View(productDTO);
         }
 
         [Authorize(Roles = SD.RoleAdmin)]

@@ -18,7 +18,7 @@ namespace Services.Web.Service
             {
                 ApiType = SD.ApiType.POST,
                 Data = couponDTO,
-                Url = SD.CouponAPIBase + "/api/coupon/"
+                Url = SD.CouponAPIBase + "/api/coupon"
             }) ;
         }
 
@@ -64,7 +64,7 @@ namespace Services.Web.Service
             {
                 ApiType = SD.ApiType.PUT,
                 Data = couponDTO,
-                Url = SD.CouponAPIBase + "/api/coupon/"
+                Url = SD.CouponAPIBase + "/api/coupon"
             });
         }
     }

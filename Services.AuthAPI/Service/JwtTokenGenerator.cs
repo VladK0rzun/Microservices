@@ -24,9 +24,9 @@ namespace Services.AuthAPI.Service
 
             var claimList = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Email, applicationUser.Email),
-                new Claim(JwtRegisteredClaimNames.Sub, applicationUser.Id),
-                new Claim(JwtRegisteredClaimNames.Name, applicationUser.UserName)
+                new Claim(JwtRegisteredClaimNames.Email,applicationUser.Email),
+                new Claim(JwtRegisteredClaimNames.Sub,applicationUser.Id),
+                new Claim(JwtRegisteredClaimNames.Name,applicationUser.UserName)
             };
 
             claimList.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
@@ -39,8 +39,8 @@ namespace Services.AuthAPI.Service
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
-            var token  = tokenHandler.CreateToken(tokenDescriptor);
 
+            var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
     }
