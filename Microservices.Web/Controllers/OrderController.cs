@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Services.Web.Models;
 using Services.Web.Service.IService;
@@ -14,6 +15,8 @@ namespace Services.Web.Controllers
         {
            _orderService = orderService;
         }
+
+        [Authorize]
         public IActionResult OrderIndex()
         {
             return View();
